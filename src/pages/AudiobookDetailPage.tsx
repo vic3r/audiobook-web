@@ -4,6 +4,7 @@ import { audiobookApi, libraryApi } from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import { toast } from 'react-hot-toast';
 import { Play, Plus, Heart, Star } from 'lucide-react';
+import AudioPlayer from '../components/AudioPlayer';
 
 export default function AudiobookDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,15 @@ export default function AudiobookDetailPage() {
     queryFn: () => audiobookApi.getById(id!),
     enabled: !!id,
   });
+
+  // Get library item to check if in library and get last position
+  const { data: libraryItems } = useQuery({
+    queryKey: ['library'],
+    queryFn: () => libraryApi.getLibrary(),
+    enabled: isAuthenticated,
+  });
+
+  const libraryItem = libraryItems?.find(item => item.audiobook.id === id);
 
   const addToLibraryMutation = useMutation({
     mutationFn: (audiobookId: string) => libraryApi.addToLibrary(audiobookId),
@@ -99,17 +109,24 @@ export default function AudiobookDetailPage() {
               <span className="text-3xl font-bold text-gray-900">${audiobook.price.toFixed(2)}</span>
             </div>
 
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 mb-8">
               {isAuthenticated ? (
                 <>
-                  <button
-                    onClick={() => addToLibraryMutation.mutate(audiobook.id)}
-                    disabled={addToLibraryMutation.isPending}
-                    className="flex items-center space-x-2 bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50"
-                  >
-                    <Plus className="w-5 h-5" />
-                    <span>Add to Library</span>
-                  </button>
+                  {libraryItem ? (
+                    <div className="flex items-center space-x-2 text-green-600">
+                      <Heart className="w-5 h-5 fill-current" />
+                      <span>In Your Library</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => addToLibraryMutation.mutate(audiobook.id)}
+                      disabled={addToLibraryMutation.isPending}
+                      className="flex items-center space-x-2 bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50"
+                    >
+                      <Plus className="w-5 h-5" />
+                      <span>Add to Library</span>
+                    </button>
+                  )}
                 </>
               ) : (
                 <Link
@@ -121,6 +138,20 @@ export default function AudiobookDetailPage() {
                 </Link>
               )}
             </div>
+
+            {/* Audio Player */}
+            {libraryItem && audiobook.audioFileUrl && (
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <h3 className="text-lg font-semibold mb-4">Continue Listening</h3>
+                <AudioPlayer
+                  audiobookId={audiobook.id}
+                  libraryItemId={libraryItem.id}
+                  audioUrl={audiobook.audioFileUrl}
+                  durationMinutes={audiobook.durationMinutes}
+                  initialPosition={libraryItem.lastPositionSeconds}
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
