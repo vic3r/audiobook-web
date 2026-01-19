@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Audiobook, LibraryItem, AuthResponse } from '../types';
+import { useAuthStore } from '../store/authStore';
 
 const api = axios.create({
   baseURL: '/api',
@@ -16,6 +17,30 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Handle 401/403 responses - automatically log out when token is expired/invalid
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      const url = error.config?.url || '';
+      // If it's an authenticated endpoint (library or auth validation), token is expired/invalid
+      // Public endpoints like /api/audiobooks/** should not trigger logout
+      if (url.includes('/library') || url.includes('/auth/me') || url.includes('/auth/validate')) {
+        // Clear token and logout using store
+        const { logout } = useAuthStore.getState();
+        logout();
+        
+        // Only redirect to login if not already there and not on a public page
+        const currentPath = window.location.pathname;
+        if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+          window.location.href = '/login';
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const authApi = {
   register: async (email: string, password: string, firstName: string, lastName: string): Promise<AuthResponse> => {

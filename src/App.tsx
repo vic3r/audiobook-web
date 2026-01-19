@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
@@ -14,11 +14,24 @@ import AudiobookDetailPage from './pages/AudiobookDetailPage';
 const queryClient = new QueryClient();
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, validateToken } = useAuthStore();
+  
+  // Validate token when accessing private routes
+  useEffect(() => {
+    validateToken();
+  }, [validateToken]);
+  
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 }
 
 function App() {
+  const { validateToken } = useAuthStore();
+  
+  // Validate token on app initialization
+  useEffect(() => {
+    validateToken();
+  }, [validateToken]);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <Router>

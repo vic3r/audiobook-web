@@ -32,8 +32,14 @@ export default function AudiobookDetailPage() {
       toast.success('Added to library!');
       queryClient.invalidateQueries({ queryKey: ['library'] });
     },
-    onError: () => {
-      toast.error('Failed to add to library');
+    onError: (error: any) => {
+      console.error('Add to library error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Failed to add to library';
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        toast.error('Please log in to add items to your library');
+      } else {
+        toast.error(errorMessage);
+      }
     },
   });
 
