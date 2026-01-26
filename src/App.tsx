@@ -10,6 +10,8 @@ import LibraryPage from './pages/LibraryPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AudiobookDetailPage from './pages/AudiobookDetailPage';
+import CreatorToolsPage from './pages/CreatorToolsPage';
+import VideoStreamingPage from './pages/VideoStreamingPage';
 
 const queryClient = new QueryClient();
 
@@ -51,6 +53,22 @@ function App() {
               }
             />
             <Route path="/audiobook/:id" element={<AudiobookDetailPage />} />
+            <Route
+              path="/creator-tools"
+              element={
+                <PrivateRoute>
+                  <CreatorToolsPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/video-streaming"
+              element={
+                <PrivateRoute>
+                  <VideoStreamingPage />
+                </PrivateRoute>
+              }
+            />
           </Routes>
           <Toaster position="top-right" />
         </div>

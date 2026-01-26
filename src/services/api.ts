@@ -107,4 +107,69 @@ export const libraryApi = {
   },
 };
 
+// Creator API (Django backend)
+const creatorApi = axios.create({
+  baseURL: 'http://localhost:8000/api',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Add auth token to creator API requests
+creatorApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Token ${token}`; // Django uses Token auth
+  }
+  return config;
+});
+
+export const creatorToolsApi = {
+  // Audiobooks
+  getAudiobooks: async () => {
+    const { data } = await creatorApi.get('/audiobooks/');
+    return data;
+  },
+  getAudiobook: async (id: string) => {
+    const { data } = await creatorApi.get(`/audiobooks/${id}/`);
+    return data;
+  },
+  createAudiobook: async (audiobook: any) => {
+    const { data } = await creatorApi.post('/audiobooks/', audiobook);
+    return data;
+  },
+  updateAudiobook: async (id: string, audiobook: any) => {
+    const { data } = await creatorApi.put(`/audiobooks/${id}/`, audiobook);
+    return data;
+  },
+  uploadChapter: async (audiobookId: string, chapterData: FormData) => {
+    const { data } = await creatorApi.post(
+      `/audiobooks/${audiobookId}/upload_chapter/`,
+      chapterData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return data;
+  },
+  publishAudiobook: async (audiobookId: string) => {
+    const { data } = await creatorApi.post(`/audiobooks/${audiobookId}/publish/`);
+    return data;
+  },
+  // Revenue
+  getRevenueDashboard: async (startDate?: string, endDate?: string) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append('start_date', startDate);
+    if (endDate) params.append('end_date', endDate);
+    const { data } = await creatorApi.get(`/revenue/dashboard/?${params.toString()}`);
+    return data;
+  },
+  getRevenues: async () => {
+    const { data } = await creatorApi.get('/revenue/');
+    return data;
+  },
+};
+
 export default api;

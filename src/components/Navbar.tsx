@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
-import { BookOpen, Home, Search, Library } from 'lucide-react';
+import { BookOpen, Home, Search, Library, Upload } from 'lucide-react';
 
 export default function Navbar() {
   const { isAuthenticated, user, logout } = useAuthStore();
@@ -30,10 +30,16 @@ export default function Navbar() {
                 <span>Browse</span>
               </Link>
               {isAuthenticated && (
-                <Link to="/library" className="flex items-center space-x-1 hover:text-orange-200">
-                  <Library className="w-4 h-4" />
-                  <span>My Library</span>
-                </Link>
+                <>
+                  <Link to="/library" className="flex items-center space-x-1 hover:text-orange-200">
+                    <Library className="w-4 h-4" />
+                    <span>My Library</span>
+                  </Link>
+                  <Link to="/creator-tools" className="flex items-center space-x-1 hover:text-orange-200">
+                    <Upload className="w-4 h-4" />
+                    <span>Creator Tools</span>
+                  </Link>
+                </>
               )}
             </div>
           </div>
